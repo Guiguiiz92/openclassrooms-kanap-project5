@@ -4,14 +4,14 @@ const url = "http://127.0.0.1:3000/api/products/" + urlParams.get("id");
 
 let product = document.querySelector(".item")
 fetch(url)
-    .then(response => response.json())
-    .then(function (data) {
-        let colorOptions
-        for (let color of data.colors) {
-            colorOptions += `<option value="${color}">${color}</option>`
-        }
+  .then(response => response.json())
+  .then(function (data) {
+    let colorOptions
+    for (let color of data.colors) {
+      colorOptions += `<option value="${color}">${color}</option>`
+    }
 
-        product.innerHTML += `
+    product.innerHTML += `
             <article>
               <div class="item__img">
                  <img src="${data.imageUrl}" alt="Photographie d'un canapé"> 
@@ -51,5 +51,22 @@ fetch(url)
               </div>
             </article>
           `;
-    }
-    )
+    document.getElementById("addToCart").addEventListener("click", () => {
+      const product = {
+        name: data.name,
+        imageUrl: data.imageUrl,
+        price: data.price,
+        description: data.description,
+        color: document.querySelector("#colors").value,
+        quantity: parseInt(document.querySelector("#quantity").value),
+      }
+      let cart = {}
+      if (localStorage.getItem("cart")) {
+        cart = JSON.parse(localStorage.getItem("cart"))
+        cart.products.push(product)
+      } else {
+        cart.products = [product]
+      }
+      localStorage.setItem("cart", JSON.stringify(cart))
+    })
+  })
