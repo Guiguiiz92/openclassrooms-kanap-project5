@@ -53,6 +53,7 @@ fetch(url)
           `;
     document.getElementById("addToCart").addEventListener("click", () => {
       const product = {
+        _id: data._id,
         name: data.name,
         imageUrl: data.imageUrl,
         price: data.price,
