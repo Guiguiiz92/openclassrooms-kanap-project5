@@ -52,22 +52,27 @@ fetch(url)
             </article>
           `;
     document.getElementById("addToCart").addEventListener("click", () => {
-      const product = {
-        _id: data._id,
-        name: data.name,
-        imageUrl: data.imageUrl,
-        price: data.price,
-        description: data.description,
-        color: document.querySelector("#colors").value,
-        quantity: parseInt(document.querySelector("#quantity").value),
+      const color = document.querySelector("#colors").value
+      const quantity = parseInt(document.querySelector("#quantity").value)
+      let cart = {
+        products: []
       }
-      let cart = {}
       if (localStorage.getItem("cart")) {
         cart = JSON.parse(localStorage.getItem("cart"))
-        cart.products.push(product)
-      } else {
-        cart.products = [product]
       }
+
+      let index = cart.products.findIndex(product => product._id === data._id && product.color === color)
+      if (index >= 0) {
+        cart.products[index].quantity += quantity
+      } else {
+        const product = {
+          _id: data._id,
+          quantity,
+          color
+        }
+        cart.products.push(product)
+      }
+
       localStorage.setItem("cart", JSON.stringify(cart))
     })
   })
