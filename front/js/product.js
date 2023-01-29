@@ -53,26 +53,35 @@ fetch(url)
           `;
     document.getElementById("addToCart").addEventListener("click", () => {
       const color = document.querySelector("#colors").value
-      const quantity = parseInt(document.querySelector("#quantity").value)
-      let cart = {
-        products: []
-      }
-      if (localStorage.getItem("cart")) {
-        cart = JSON.parse(localStorage.getItem("cart"))
-      }
+      if (color) {
+        const quantity = parseInt(document.querySelector("#quantity").value)
+        if (quantity > 0) {
+          let cart = {
+            products: []
+          }
+          if (localStorage.getItem("cart")) {
+            cart = JSON.parse(localStorage.getItem("cart"))
+          }
 
-      let index = cart.products.findIndex(product => product._id === data._id && product.color === color)
-      if (index >= 0) {
-        cart.products[index].quantity += quantity
-      } else {
-        const product = {
-          _id: data._id,
-          quantity,
-          color
+          let index = cart.products.findIndex(product => product._id === data._id && product.color === color)
+          if (index >= 0) {
+            cart.products[index].quantity += quantity
+          } else {
+            const product = {
+              _id: data._id,
+              quantity,
+              color
+            }
+            cart.products.push(product)
+          }
+
+          localStorage.setItem("cart", JSON.stringify(cart))
+          alert("Produit ajouté !");
+        } else {
+          alert("La quantité ne peut pas être inférieure à 1.")
         }
-        cart.products.push(product)
+      } else {
+        alert("La couleur est obligatoire.")
       }
-
-      localStorage.setItem("cart", JSON.stringify(cart))
     })
   })
