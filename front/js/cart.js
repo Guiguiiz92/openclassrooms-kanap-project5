@@ -32,10 +32,13 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
     const firstName = document.getElementById("firstName").value
     if (firstName) {
         // Si le prénom ne match pas exactement avec la regex
-        if (!matchExact(/[a-zA-Z -]/gm, firstName)) {
+        if (
+            !firstName.match(/^[a-zA-Z -]+$/gm)
+        ) {
             nbErrors++
             firstNameError.innerHTML = "Le format est incorrect. Seuls les lettres et le tiret sont autorisés."
         }
+
     } else {
         nbErrors++
         firstNameError.innerHTML = "Ce champ est obligatoire."
@@ -45,7 +48,7 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
     const lastName = document.getElementById("lastName").value
     if (lastName) {
         // Si le nom ne match pas exactement avec la regex
-        if (!matchExact(/[a-zA-Z -']/gm, lastName)) {
+        if (!lastName.match(/^[a-zA-Z -']+$/gm)) {
             nbErrors++
             lastNameError.innerHTML = "Le format est incorrect. Seuls les lettres, le tiret et l'apostrophe sont autorisés."
         }
@@ -58,7 +61,7 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
     const address = document.getElementById("address").value
     if (address) {
         // Si l'adresse ne match pas exactement avec la regex
-        if (!matchExact(/[a-zA-Z0-9, -'.]/gm, address)) {
+        if (!address.match(/^[a-zA-Z0-9, -'.]+$/gm)) {
             nbErrors++
             addressError.innerHTML = "Le format de l'adresse est incorrecte."
         }
@@ -71,7 +74,7 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
     const city = document.getElementById("city").value
     if (city) {
         // Si la ville ne match pas exactement avec la regex
-        if (!matchExact(/[a-zA-Z -']/gm, city)) {
+        if (!city.match(/^[a-zA-Z -']+$/gm)) {
             nbErrors++
             cityError.innerHTML = "Le format est incorrect. Seuls les lettres, le tiret et l'apostrophe sont autorisés."
         }
@@ -84,7 +87,7 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
     const email = document.getElementById("email").value
     if (email) {
         // Si l'email ne match pas avec la regex
-        if (!email.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/gm)) {
+        if (!email.match(/^[a-zA-Z0-9.+-_]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,10}$/gm)) {
             nbErrors++
             emailError.innerHTML = "Le format d'adresse email est incorrect."
         }
@@ -124,12 +127,21 @@ document.getElementsByClassName("cart__order__form")[0].addEventListener("submit
  * @param updateDOM
  */
 function updateCart(updateDOM = true) {
+    // localStorage.setItem permet de mettre un élément dans le local storage
+    // le local storage est un stockage clé => valeur dans le navigateur
+    // ici la clé est "cart" et la valeur est JSON.stringify(cart)
+    // JSON.stringify permet de transformer un objet JSON en chaîne de caractères
+    // la valeur poussée dans le local storage est forcément une chaîne de caractères
     localStorage.setItem("cart", JSON.stringify(cart))
     globalQuantity = 0
     globalPrice = 0
     if (updateDOM) {
+        //réinitialise l'affiche du panier
         cartItems.innerHTML = ""
     }
+    // La fonction .map() permet de boucler sur chaque élément d'un tableau
+    // Pour chaque élément on renvoie un nouvel état de l'élément
+    // Ici on construit une liste de fetch (et donc de promesses)
     const promises = cart.products.map((tinyProduct) => {
         return fetch(url + tinyProduct._id)
             .then(response => response.json())
@@ -138,6 +150,7 @@ function updateCart(updateDOM = true) {
                 globalPrice += product.price * tinyProduct.quantity
 
                 if (updateDOM) {
+                    // a += b ==> a = a + b
                     cartItems.innerHTML += `
                         <article class="cart__item" data-id="${product._id}" data-color="${tinyProduct.color}">
                             <div class="cart__item__img">
@@ -164,8 +177,10 @@ function updateCart(updateDOM = true) {
                 }
             })
     })
+    //Promise.all effectue toutes les promesses précedemment crée
     Promise.all(promises).then(() => {
         if (updateDOM) {
+            // Initialise les écouteurs d'évenements
             initEventListener()
         }
 
@@ -178,18 +193,25 @@ function updateCart(updateDOM = true) {
  * Ajoute des écouteurs d'évènements sur les inputs de quantité et les boutons de suppression du panier
  */
 function initEventListener() {
+    // Foreach execute une boucle sur les item
     document.querySelectorAll(".itemQuantity").forEach((item) => {
+        // Des qu'une valeur change, l'évenement est déclenché et donc execute le code
         item.addEventListener("change", (e) => {
+            //Avec "Closest on va récuperer l'élément le plus proche qui a pour classe "cart__item" et avec get on récupere le data--id
             const productId = e.srcElement.closest('.cart__item').getAttribute("data-id")
             const color = e.srcElement.closest('.cart__item').getAttribute("data-color")
+            //parseInt = transforme en nombre entier
             const quantity = parseInt(e.srcElement.value)
+            //Avec findIndex, je récupère l'index (sa position dans la liste) du produit qu'on va modifié
             let indexToUpdate = cart.products.findIndex((product) => product._id === productId && product.color === color)
 
             if (quantity > 0) {
+                //Met à jour la nouvelle quantité du produit
                 cart.products[indexToUpdate].quantity = quantity
 
                 updateCart(false)
             } else {
+                //Permet de repasser à la quantité initiale 
                 e.srcElement.value = cart.products[indexToUpdate].quantity
                 alert("La quantité ne peut pas être inférieure à 1.")
             }
@@ -199,7 +221,7 @@ function initEventListener() {
         item.addEventListener("click", (e) => {
             const productId = e.srcElement.closest('.cart__item').getAttribute("data-id")
             const color = e.srcElement.closest('.cart__item').getAttribute("data-color")
-
+            //filter va vérif chaque item pour ma nouvelle liste "cart.products" sans l'item qu'on a voulu supprimer
             cart.products = cart.products.filter((product) => product._id !== productId || product.color !== color)
 
             updateCart()
@@ -207,20 +229,6 @@ function initEventListener() {
     })
 }
 
-/**
- * Renvoie un booléen si une chaîne de caractères (String) match exactement avec une Regex donnée
- * Exemple :
- *   /[a-zA-Z -]/gm
- *   "T1ot o-" 7
- *   ["T", "o", "t", " ", "o", "-"] 6
- * @param {RegExp} r 
- * @param {String} str 
- * @returns {Boolean}
- */
-function matchExact(r, str) {
-    var match = str.match(r);
-    return match && str.length === match.length;
-}
 
 /**
  * Récupère toutes les infos du panier et du formulaire pour l'envoyer au back
@@ -245,11 +253,9 @@ function sendCartAndForm(form) {
         // then = après
         .then(response => response.json())
         .then((data) => {
-            // La requête est passée, on vide le panier
-            cart = {
-                products: []
-            }
-            updateCart()
+            // La requête est passée, on supprime le panier
+            localStorage.removeItem('cart')
+
             window.location.href = "http://127.0.0.1:5500/front/html/confirmation.html?orderId=" + data.orderId
         })
         .catch((error) => {

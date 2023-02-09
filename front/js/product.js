@@ -10,47 +10,13 @@ fetch(url)
     for (let color of data.colors) {
       colorOptions += `<option value="${color}">${color}</option>`
     }
+    document.querySelector(".item__img").innerHTML = `<img src="${data.imageUrl}" alt="Photographie d'un canapé">`
+    document.querySelector("#title").innerHTML = data.name
+    document.querySelector("#price").innerHTML = data.price
+    document.querySelector("#description").innerHTML = data.description
+    document.querySelector("#colors").innerHTML += colorOptions
 
-    product.innerHTML += `
-            <article>
-              <div class="item__img">
-                 <img src="${data.imageUrl}" alt="Photographie d'un canapé"> 
-              </div>
-              <div class="item__content">
-  
-                <div class="item__content__titlePrice">
-                  <h1 id="title">${data.name}</h1>
-                  <p>Prix : <span id="price">${data.price}</span>€</p>
-                </div>
-  
-                <div class="item__content__description">
-                  <p class="item__content__description__title">Description :</p>
-                  <p id="description">${data.description}</p>
-                </div>
-  
-                <div class="item__content__settings">
-                  <div class="item__content__settings__color">
-                    <label for="color-select">Choisir une couleur :</label>
-                    <select name="color-select" id="colors">
-                        <option value="">--SVP, choisissez une couleur --</option>
-                        ${colorOptions}
-  
-                    </select>
-                  </div>
-  
-                  <div class="item__content__settings__quantity">
-                    <label for="itemQuantity">Nombre d'article(s) (1-100) :</label>
-                    <input type="number" name="itemQuantity" min="1" max="100" value="0" id="quantity">
-                  </div>
-                </div>
-  
-                <div class="item__content__addButton">
-                  <button id="addToCart">Ajouter au panier</button>
-                </div>
-  
-              </div>
-            </article>
-          `;
+    // Ajouter un produit
     document.getElementById("addToCart").addEventListener("click", () => {
       const color = document.querySelector("#colors").value
       if (color) {
@@ -59,14 +25,20 @@ fetch(url)
           let cart = {
             products: []
           }
+          // Si le panier existe dans le localStroage on le récupère
           if (localStorage.getItem("cart")) {
             cart = JSON.parse(localStorage.getItem("cart"))
           }
-
+          // Avec findIndex on boucle sur chaque product et s'il remplit la condition donné 
+          // on renvoie son index dans la liste cart.products
+          // Pour identifier un product on check la combinaison de condition id et color
           let index = cart.products.findIndex(product => product._id === data._id && product.color === color)
           if (index >= 0) {
+            // Si l'index est bien retrouvé, ça signifie que le product existe déjà
+            // donc on le récupère et on met à jour sa quantité
             cart.products[index].quantity += quantity
           } else {
+            // Sinon on ajoute le product entier dans le panier
             const product = {
               _id: data._id,
               quantity,
