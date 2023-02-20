@@ -256,7 +256,7 @@ function sendCartAndForm(form) {
             // La requête est passée, on supprime le panier
             localStorage.removeItem('cart')
 
-            window.location.href = "http://127.0.0.1:5500/front/html/confirmation.html?orderId=" + data.orderId
+            window.location.href = "http://localhost:5500/front/html/confirmation.html?orderId=" + data.orderId
         })
         .catch((error) => {
             alert("La transaction n'a pas fonctionné, merci de réessayez ultérieurement.")
