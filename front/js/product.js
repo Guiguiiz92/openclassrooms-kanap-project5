@@ -1,6 +1,6 @@
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
-const url = "http://127.0.0.1:3000/api/products/" + urlParams.get("id");
+const url = "http://localhost:3000/api/products/" + urlParams.get("id");
 
 let product = document.querySelector(".item")
 fetch(url)
